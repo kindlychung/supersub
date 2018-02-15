@@ -3,7 +3,9 @@
     "displayName": "supersub",
     "description": "Convert a string to superscript or subscript if possible.",
     "version": "0.0.1",
-    "publisher": "qed",
+    "publisher": "quiever",
+    "repository": "https://github.com/kindlychung/supersub",
+    "icon": "./supersub.png",
     "engines": {
         "vscode": "^1.20.0"
     },
