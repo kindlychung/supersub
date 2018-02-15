@@ -2,7 +2,7 @@
     "name": "supersub",
     "displayName": "supersub",
     "description": "Convert a string to superscript or subscript if possible.",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "publisher": "quiever",
     "repository": "https://github.com/kindlychung/supersub",
     "icon": "supersub.png",
