@@ -4,6 +4,6 @@ A visual studio code (vscode) extension for convert normal characters to unicode
 
 ## Features
 
-![](https://i.imgur.com/z7KgK6r.gifv)
+![](https://github.com/kindlychung/supersub/raw/master/supersub_demo.gif)
 
 
