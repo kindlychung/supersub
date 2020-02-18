@@ -132,7 +132,7 @@ class SuperSub {
         this._subMap.set("a", "ₐ");
         this._subMap.set("p", "ₚ");
         this._subMap.set("n", "ₙ");
-        this._subMap.set("θ", "₀");
+        this._subMap.set("0", "₀");
     }
     private _superMap = new Map<string, string>() ;
     private _subMap = new Map<string, string>() ;
