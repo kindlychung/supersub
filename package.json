@@ -32,15 +32,21 @@
     "scripts": {
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
+        "lint": "eslint . --ext .ts,.tsx",
         "watch": "tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
         "test": "npm run compile && node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
-        "typescript": "^2.6.1",
-        "vscode": "^1.1.6",
-        "tslint": "^5.8.0",
-        "@types/node": "^7.0.43",
-        "@types/mocha": "^2.2.42"
+        "@types/glob": "^8.0.0",
+        "@types/mocha": "^9.1.1",
+        "@types/node": "^18.7.18",
+        "@types/vscode": "^1.71.0",
+        "@typescript-eslint/eslint-plugin": "^5.38.0",
+        "@typescript-eslint/parser": "^5.38.0",
+        "@vscode/test-electron": "^2.1.5",
+        "eslint": "^8.23.1",
+        "glob": "^8.0.3",
+        "mocha": "^10.0.0",
+        "typescript": "^4.8.3"
     }
 }

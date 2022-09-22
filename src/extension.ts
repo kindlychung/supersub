@@ -1,24 +1,19 @@
-'use strict';
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
-import { window, commands, ExtensionContext, } from 'vscode';
+import { window, commands, ExtensionContext, Range, TextEdit, WorkspaceEdit, workspace, Selection, TextEditor } from 'vscode';
+
+type ConversionKind = "super" | "sub";
 
 // This method is called when your extension is activated. Activation is
 // controlled by the activation events defined in package.json.
 export function activate(context: ExtensionContext) {
-
-    // Use the console to output diagnostic information (console.log) and errors (console.error).
     // This line of code will only be executed once when your extension is activated.
     console.log('Congratulations, your extension "supersub" is now active!');
 
-    // create a new word counter
-    let supersub = new SuperSub();
+    const supersub = new SuperSub();
 
-    let superCmd = commands.registerCommand('supersub.super', () => {
+    const superCmd = commands.registerCommand('supersub.super', () => {
         supersub.convert("super");
     });
-    let subCmd = commands.registerCommand('supersub.sub', () => {
+    const subCmd = commands.registerCommand('supersub.sub', () => {
         supersub.convert("sub");
     });
 
@@ -27,9 +22,9 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(subCmd);
 }
 
-
-
 class SuperSub {
+    private _superMap = new Map<string, string>();
+    private _subMap = new Map<string, string>();
 
     constructor() {
         this._superMap.set("L", "ᴸ");
@@ -134,50 +129,36 @@ class SuperSub {
         this._subMap.set("n", "ₙ");
         this._subMap.set("θ", "₀");
     }
-    private _superMap = new Map<string, string>() ;
-    private _subMap = new Map<string, string>() ;
 
-    private superOrSub(s: string, kind: string): string {
-        var result = new String("");
-        for (var i = 0; i < s.length; i++) {
-            let char = s[i];
-            var replacement: string | undefined = undefined;
-            if (kind === "super") {
-                replacement = this._superMap.get(char);
-            } else {
-                replacement = this._subMap.get(char);
-            }
-            if (replacement) {
-                result = result.concat(replacement);
-            } else {
-                result = result.concat(char);
-            }
-        }
-        return result.toString();
-    }
-
-    public convert(kind: string) {
-        let editor = window.activeTextEditor;
+    public convert(kind: ConversionKind) {
+        const editor = window.activeTextEditor;
         if (editor) {
-            let uri = editor.document.uri;
-            let doc = editor.document;
-            let selection = editor.selection;
-            let start = selection.start;
-            let end = selection.end;
-            let editRange = new vscode.Range(start, end);
-            let selectedString = doc.getText(editRange);
-            var replacement: string;
-            if (kind === "super") {
-                replacement = this.superOrSub(selectedString, "super");
-            } else {
-                replacement = this.superOrSub(selectedString, "sub");
-            }
-            let textEdit = new vscode.TextEdit(editRange, replacement);
-            let wsEdit = new vscode.WorkspaceEdit();
-            wsEdit.set(uri, [textEdit]);
-            vscode.workspace.applyEdit(wsEdit);
+            const edits = editor.selections.map((selection) => this.convertSelection(editor, kind, selection));
+           
+            const wsEdit = new WorkspaceEdit();
+            wsEdit.set(editor.document.uri, edits);
+            workspace.applyEdit(wsEdit);
         }
     }
 
-    dispose() {}
+    private convertSelection(editor: TextEditor, kind: ConversionKind, selection: Selection) {
+        const editRange = new Range(selection.start, selection.end);
+        const selectedString = editor.document.getText(editRange);
+        const replacement = this.convertString(selectedString, kind);
+
+        return new TextEdit(editRange, replacement);
+    }
+
+    private convertString(string: string, kind: ConversionKind) {
+        return [...string].map((char) => this.getConversionMap(kind).get(char) ?? char).join("");
+    }
+
+    private getConversionMap(kind: ConversionKind) {
+        switch (kind) {
+            case "super": return this._superMap;
+            case "sub": return this._subMap;
+            default: throw new Error(`Unknown kind: (${kind})`);
+        }
+    }
+
 }
