@@ -13,12 +13,12 @@ export function activate(context: ExtensionContext) {
     console.log('Congratulations, your extension "supersub" is now active!');
 
     // create a new word counter
-    let supersub = new SuperSub();
+    const supersub = new SuperSub();
 
-    let superCmd = commands.registerCommand('supersub.super', () => {
+    const superCmd = commands.registerCommand('supersub.super', () => {
         supersub.convert("super");
     });
-    let subCmd = commands.registerCommand('supersub.sub', () => {
+    const subCmd = commands.registerCommand('supersub.sub', () => {
         supersub.convert("sub");
     });
 
@@ -26,8 +26,6 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(superCmd);
     context.subscriptions.push(subCmd);
 }
-
-
 
 class SuperSub {
 
@@ -138,10 +136,10 @@ class SuperSub {
     private _subMap = new Map<string, string>() ;
 
     private superOrSub(s: string, kind: string): string {
-        var result = new String("");
-        for (var i = 0; i < s.length; i++) {
-            let char = s[i];
-            var replacement: string | undefined = undefined;
+        let result = new String("");
+        for (let i = 0; i < s.length; i++) {
+            const char = s[i];
+            let replacement: string | undefined = undefined;
             if (kind === "super") {
                 replacement = this._superMap.get(char);
             } else {
@@ -157,27 +155,26 @@ class SuperSub {
     }
 
     public convert(kind: string) {
-        let editor = window.activeTextEditor;
+        const editor = window.activeTextEditor;
         if (editor) {
-            let uri = editor.document.uri;
-            let doc = editor.document;
-            let selection = editor.selection;
-            let start = selection.start;
-            let end = selection.end;
-            let editRange = new vscode.Range(start, end);
-            let selectedString = doc.getText(editRange);
-            var replacement: string;
+            const uri = editor.document.uri;
+            const doc = editor.document;
+            const selection = editor.selection;
+            const start = selection.start;
+            const end = selection.end;
+            const editRange = new vscode.Range(start, end);
+            const selectedString = doc.getText(editRange);
+            let replacement: string;
             if (kind === "super") {
                 replacement = this.superOrSub(selectedString, "super");
             } else {
                 replacement = this.superOrSub(selectedString, "sub");
             }
-            let textEdit = new vscode.TextEdit(editRange, replacement);
-            let wsEdit = new vscode.WorkspaceEdit();
+            const textEdit = new vscode.TextEdit(editRange, replacement);
+            const wsEdit = new vscode.WorkspaceEdit();
             wsEdit.set(uri, [textEdit]);
             vscode.workspace.applyEdit(wsEdit);
         }
     }
 
-    dispose() {}
 }
