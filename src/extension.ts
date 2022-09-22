@@ -1,18 +1,11 @@
-'use strict';
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
-import { window, commands, ExtensionContext, } from 'vscode';
+import { window, commands, ExtensionContext, Range, TextEdit, WorkspaceEdit, workspace } from 'vscode';
 
 // This method is called when your extension is activated. Activation is
 // controlled by the activation events defined in package.json.
 export function activate(context: ExtensionContext) {
-
-    // Use the console to output diagnostic information (console.log) and errors (console.error).
     // This line of code will only be executed once when your extension is activated.
     console.log('Congratulations, your extension "supersub" is now active!');
 
-    // create a new word counter
     const supersub = new SuperSub();
 
     const superCmd = commands.registerCommand('supersub.super', () => {
@@ -28,6 +21,8 @@ export function activate(context: ExtensionContext) {
 }
 
 class SuperSub {
+    private _superMap = new Map<string, string>();
+    private _subMap = new Map<string, string>();
 
     constructor() {
         this._superMap.set("L", "ᴸ");
@@ -132,48 +127,34 @@ class SuperSub {
         this._subMap.set("n", "ₙ");
         this._subMap.set("θ", "₀");
     }
-    private _superMap = new Map<string, string>() ;
-    private _subMap = new Map<string, string>() ;
 
-    private superOrSub(s: string, kind: string): string {
-        let result = new String("");
-        for (let i = 0; i < s.length; i++) {
-            const char = s[i];
-            let replacement: string | undefined = undefined;
-            if (kind === "super") {
-                replacement = this._superMap.get(char);
-            } else {
-                replacement = this._subMap.get(char);
-            }
-            if (replacement) {
-                result = result.concat(replacement);
-            } else {
-                result = result.concat(char);
-            }
-        }
-        return result.toString();
-    }
-
-    public convert(kind: string) {
+    public convert(kind: "super" | "sub") {
         const editor = window.activeTextEditor;
         if (editor) {
-            const uri = editor.document.uri;
-            const doc = editor.document;
             const selection = editor.selection;
             const start = selection.start;
             const end = selection.end;
-            const editRange = new vscode.Range(start, end);
-            const selectedString = doc.getText(editRange);
-            let replacement: string;
-            if (kind === "super") {
-                replacement = this.superOrSub(selectedString, "super");
-            } else {
-                replacement = this.superOrSub(selectedString, "sub");
-            }
-            const textEdit = new vscode.TextEdit(editRange, replacement);
-            const wsEdit = new vscode.WorkspaceEdit();
-            wsEdit.set(uri, [textEdit]);
-            vscode.workspace.applyEdit(wsEdit);
+            const editRange = new Range(start, end);
+
+            const selectedString = editor.document.getText(editRange);
+            const replacement = this.convertString(selectedString, kind);
+
+            const textEdit = new TextEdit(editRange, replacement);
+            const wsEdit = new WorkspaceEdit();
+            wsEdit.set(editor.document.uri, [textEdit]);
+            workspace.applyEdit(wsEdit);
+        }
+    }
+
+    private convertString(string: string, kind: "super" | "sub") {
+        return [...string].map((char) => this.getConversionMap(kind).get(char) ?? char).join("");
+    }
+
+    private getConversionMap(kind: "super" | "sub") {
+        switch (kind) {
+            case "super": return this._superMap;
+            case "sub": return this._subMap;
+            default: throw new Error(`Unknown kind: (${kind})`);
         }
     }
 
