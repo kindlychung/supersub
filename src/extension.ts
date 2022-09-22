@@ -1,4 +1,6 @@
-import { window, commands, ExtensionContext, Range, TextEdit, WorkspaceEdit, workspace } from 'vscode';
+import { window, commands, ExtensionContext, Range, TextEdit, WorkspaceEdit, workspace, Selection, TextEditor } from 'vscode';
+
+type ConversionKind = "super" | "sub";
 
 // This method is called when your extension is activated. Activation is
 // controlled by the activation events defined in package.json.
@@ -128,29 +130,30 @@ class SuperSub {
         this._subMap.set("θ", "₀");
     }
 
-    public convert(kind: "super" | "sub") {
+    public convert(kind: ConversionKind) {
         const editor = window.activeTextEditor;
         if (editor) {
-            const selection = editor.selection;
-            const start = selection.start;
-            const end = selection.end;
-            const editRange = new Range(start, end);
-
-            const selectedString = editor.document.getText(editRange);
-            const replacement = this.convertString(selectedString, kind);
-
-            const textEdit = new TextEdit(editRange, replacement);
+            const edits = editor.selections.map((selection) => this.convertSelection(editor, kind, selection));
+           
             const wsEdit = new WorkspaceEdit();
-            wsEdit.set(editor.document.uri, [textEdit]);
+            wsEdit.set(editor.document.uri, edits);
             workspace.applyEdit(wsEdit);
         }
     }
 
-    private convertString(string: string, kind: "super" | "sub") {
+    private convertSelection(editor: TextEditor, kind: ConversionKind, selection: Selection) {
+        const editRange = new Range(selection.start, selection.end);
+        const selectedString = editor.document.getText(editRange);
+        const replacement = this.convertString(selectedString, kind);
+
+        return new TextEdit(editRange, replacement);
+    }
+
+    private convertString(string: string, kind: ConversionKind) {
         return [...string].map((char) => this.getConversionMap(kind).get(char) ?? char).join("");
     }
 
-    private getConversionMap(kind: "super" | "sub") {
+    private getConversionMap(kind: ConversionKind) {
         switch (kind) {
             case "super": return this._superMap;
             case "sub": return this._subMap;
